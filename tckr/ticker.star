@@ -1,5 +1,6 @@
 load("render.star", "render")
 load("http.star", "http")
+load("math.star", "math")
 load("encoding/base64.star", "base64")
 load("cache.star", "cache")
 
@@ -41,7 +42,7 @@ def main():
                 fail("API request failed with status %d", rep.status_code)
             # print(rep)
             rate = rep.json()["Global Quote"]["05. price"]
-            msg = msg + a + ": $" + str(rate) + " ... "
+            msg = msg + a + ": $" + str(rate[:-2]) + " ... "
         cache.set("sym_rate", msg, ttl_seconds=240)
 
     return render.Root(
