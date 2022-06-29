@@ -2,15 +2,13 @@ load("render.star", "render")
 load("http.star", "http")
 load("math.star", "math")
 load("encoding/base64.star", "base64")
+load("encoding/json.star", "json")
 load("cache.star", "cache")
+load("secret.star", "secret")
+load("schema.star", "schema")
 
 STOCK_QUOTE_URL = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol="
 ALPHA_KEY="&apikey=E7ZMKTKHIC5PBHFU"
-GOOG_SYMBOL="GOOGL"
-AMZN_SYMBOL="AMZN"
-PEL_SYMBOL="PTON"
-APL_SYMBOL="AAPL"
-MS_SYMBOL="MSFT"
 SYMBOLS = ["GOOGL", "AMZN", "PTON", "AAPL", "MSFT"]
 
 SYMBOL_B64 = base64.decode("""
@@ -22,25 +20,26 @@ igXjqA5QVcqRFbSkRWS73MhBxwpGRnAGAwmUGS9KHUAAAAAElFTkSuQmCC
 
 
 
-def main():
-    full_url=STOCK_QUOTE_URL + GOOG_SYMBOL + ALPHA_KEY
-    for a in SYMBOLS:
-        print(a)
+def main(config):
+    if (config.get("stock_1")):
+        SYMBOLS = [
+            json.decode(config.get("stock_1")),
+            json.decode(config.get("stock_2")),
+            json.decode(config.get("stock_3")),
+        ]
+    else:
+        SYMBOLS = ["GOOGL", "AMZN", "WFC"]
 
-    # print(full_url)
     rate_cached = cache.get("sym_rate")
     if rate_cached != None:
-        # print("Hit! Displaying cached data.")
         msg = int(rate_cached)
     else:
-        # print("Miss! Calling Alpha API.")
         msg = ""
         for a in SYMBOLS:
             full_url = STOCK_QUOTE_URL + a + ALPHA_KEY
             rep = http.get(full_url)
             if rep.status_code !=200:
                 fail("API request failed with status %d", rep.status_code)
-            # print(rep)
             rate = rep.json()["Global Quote"]["05. price"]
             msg = msg + a + ": $" + str(rate[:-2]) + " ... "
         cache.set("sym_rate", msg, ttl_seconds=240)
@@ -62,4 +61,31 @@ def main():
                 ],
             ),
         ),
+    )
+
+def get_schema():
+    return schema.Schema(
+        version = "1",
+        fields = [
+            schema.Text(
+                id = "stock_1",
+                name = "Stock Symbol 1",
+                desc = "Symbol for first stock",
+                icon = "tag",
+                default = "MSFT",
+            ),
+            schema.Text(
+                id = "stock_2",
+                name = "Stock Symbol 1",
+                desc = "Symbol for first stock",
+                icon = "tag",
+                default = "IBM",
+            ),schema.Text(
+                id = "stock_3",
+                name = "Stock Symbol 1",
+                desc = "Symbol for first stock",
+                icon = "tag",
+                default = "PTON",
+            ),
+        ]
     )
