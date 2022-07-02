@@ -86,6 +86,12 @@ def get_schema():
                 desc = "Symbol for first stock",
                 icon = "tag",
                 default = "PTON",
-            ),
+            ),schema.Text(
+                id = "ALPHA_KEY",
+                name = "Alpha Vantage API Key",
+                desc = "API key for Alpha Vantage (https://www.alphavantage.co)",
+                icon = "key",
+                default = "",
+            )
         ]
     )
